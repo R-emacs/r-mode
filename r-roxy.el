@@ -28,9 +28,8 @@
 ;; 
 ;;; Code:
 
-
-(require 'r-syntax)
 (require 'cl-lib)
+(require 'r-indent)
 
 (defgroup r-roxy nil
   "Mode for editing in-code Roxygen documentation."

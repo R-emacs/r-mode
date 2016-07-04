@@ -25,88 +25,14 @@
 ;;; Code:
 
 (require 'regexp-opt)
-(eval-when-compile
-  (require 'cl-lib))
+(require 'cl-lib)
 
-(defvar r-symbol-regexp "\\(\\sw\\|\\s_\\)"
-  "The regular expression for matching an R symbol")
-
-
-;;*;; Un-categorized yet
-
-(defun r-containing-sexp-position ()
-  (cadr (syntax-ppss)))
-
-(defun r-line-end-position ()
-  "Like (line-end-position) but stops at comments"
-  (save-excursion
-    (or (and (re-search-forward "#" (line-end-position) t)
-             (match-beginning 0))
-        (line-end-position))))
-
-(defun r-blink-region (start end)
-  (when ess-blink-region
-    (move-overlay ess-current-region-overlay start end)
-    (run-with-timer ess-blink-delay nil
-                    (lambda ()
-                      (delete-overlay ess-current-region-overlay)))))
-
-(defun r-goto-line (line)
-  (save-restriction
-    (widen)
-    (goto-char (point-min))
-    (forward-line (1- line))))
+(require 'r-utils)
 
 
 ;;*;; Utils
 
-;; The three following wrappers return t if successful, nil on error
-(defun r-backward-sexp (&optional N)
-  (r-forward-sexp (- (or N 1))))
-
-(defun r-forward-sexp (&optional N)
-  (or N (setq N 1))
-  (condition-case nil
-      (prog1 t
-        (goto-char (or (scan-sexps (point) N)
-                       (buffer-end N))))
-    (error nil)))
-
-(defun r-up-list (&optional N)
-  (condition-case nil
-      (progn (up-list N) t)
-    (error nil)))
-
-(defun r-forward-char (&optional N)
-  (unless (= (point) (point-max))
-    (forward-char (or N 1))
-    t))
-
-(defun r-backward-char (&optional N)
-  (unless (= (point) (point-min))
-    (forward-char (- (or N 1)))
-    t))
-
-(defun r-goto-char (pos)
-  "Go to `pos' if it is non-nil.
-If `pos' is nil, return nil.  Otherwise return `pos' itself."
-  (when pos
-    (goto-char pos)))
-
-(defun r-looking-at (regex &optional newlines)
-  "Like `looking-at' but consumes blanks and comments first."
-  (save-excursion
-    (r-skip-blanks-forward newlines)
-    (looking-at regex)))
-
-(defun r-back-to-indentation ()
-  "Move point to the first non-whitespace character on this line.
-This non-interactive version of (back-to-indentation) should not
-be advised"
-  (beginning-of-line 1)
-  (skip-syntax-forward " " (line-end-position))
-  ;; Move back over chars that have whitespace syntax but have the p flag.
-  (backward-prefix-chars))
+;; VS[04-07-2016]: fixme: these macros rely on dynamic scope. That's bad.
 
 (defmacro r-save-excursion-when-nil (&rest body)
   (declare (indent 0)
@@ -445,7 +371,7 @@ reached."
     (`"[[" "]]")
     (`"]]" "[[")))
 
-
+
 ;;;*;;; Token predicates
 
 (defun r-token= (token &optional type string)
@@ -485,7 +411,7 @@ reached."
 (defun r-token-keyword-p (token)
   (member (r-token-type token) r-keywords-list))
 
-
+
 ;;;*;;; Tokens properties and accessors
 
 (defun r-token-make-hash (&rest specs)
@@ -587,7 +513,7 @@ reached."
   (r-token-make-hash
    '((")" . r-parser-rid-expr-prefix))))
 
-
+
 ;;;*;;; Nud, led and rid functions
 
 (defun r-parser-nud-block (prefix-token)
@@ -641,7 +567,7 @@ reached."
                 (list prefixed-expr args left)
               (list args left)))))
 
-
+
 ;;;*;;; Parsing
 
 (defun r-parser-advance (&optional type value)
@@ -775,6 +701,8 @@ reached."
 
 
 ;;*;; Point predicates
+;; fixme: not a good name for a section. Many predicates from the next section
+;; are also point-predicates.
 
 (defun r-within-call-p (&optional call)
   "Is point in a function or indexing call?"
@@ -828,7 +756,73 @@ nil, return the prefix."
 
 ;;*;; Syntactic Travellers and Predicates
 
-;;;*;;; Blanks, Characters, Comments and Delimiters
+;;;*;;; Basic
+
+(defun r-ahead-closing-p ()
+  (memq (char-before) '(?\] ?\} ?\))))
+
+(defun r-ahead-boundary-p ()
+  (looking-back "[][ \t\n(){},]" (1- (point))))
+
+(defun r-goto-char (pos)
+  "Just as `goto-char' but return nil when POS is nil."
+  (when pos
+    (goto-char pos)))
+
+(defun r-goto-line (line)
+  "Go to LINE."
+  (save-restriction
+    (widen)
+    (goto-char (point-min))
+    (forward-line (1- line))))
+
+(defun r-backward-sexp (&optional N)
+  "Like `backward-sexp' but don't throw."
+  (r-forward-sexp (- (or N 1))))
+
+(defun r-forward-sexp (&optional N)
+  "Like `forward-sexp' but don't throw."
+  (setq N (or N 1))
+  (condition-case nil
+      (prog1 t
+        (goto-char (or (scan-sexps (point) N)
+                       (buffer-end N))))
+    (error nil)))
+
+(defun r-up-list (&optional N)
+  "Like `up-char' but don't throw."
+  (condition-case nil
+      (progn (up-list N) t)
+    (error nil)))
+
+(defun r-forward-char (&optional N)
+  "Like `forward-char' but don't throw at point-max.
+Return t when succeed, nil otherwise."
+  (unless (= (point) (point-max))
+    (forward-char (or N 1))
+    t))
+
+(defun r-backward-char (&optional N)
+  "Like `backward-char' but don't throw."
+  (unless (= (point) (point-min))
+    (forward-char (- (or N 1)))
+    t))
+
+(defun r-jump-char (char)
+  (r-save-excursion-when-nil
+    (r-skip-blanks-forward t)
+    (when (looking-at char)
+      (goto-char (match-end 0)))))
+
+;; VS[04-07-2016]: Is this really needed?
+(defun r-back-to-indentation ()
+  "Move point to the first non-whitespace character on this line.
+This non-interactive version of (back-to-indentation) should not
+be advised"
+  (beginning-of-line 1)
+  (skip-syntax-forward " " (line-end-position))
+  ;; Move back over chars that have whitespace syntax but have the p flag.
+  (backward-prefix-chars))
 
 (defun r-skip-blanks-backward (&optional newlines)
   "Skip blanks and newlines backward, taking end-of-line comments
@@ -860,22 +854,11 @@ into account."
                           (skip-chars-forward " \t")
                           t))))))
 
-(defun r-jump-char (char)
-  (r-save-excursion-when-nil
-    (r-skip-blanks-forward t)
-    (when (looking-at char)
-      (goto-char (match-end 0)))))
-
+;; fixme: meaning of "escape" is not clear
 (defun r-escape-comment ()
   (when (r-within-comment-p)
     (prog1 (comment-beginning)
       (skip-chars-backward "#+[ \t]*"))))
-
-(defun r-ahead-closing-p ()
-  (memq (char-before) '(?\] ?\} ?\))))
-
-(defun r-ahead-boundary-p ()
-  (looking-back "[][ \t\n(){},]" (1- (point))))
 
 (defun r-escape-string ()
   (and (nth 3 (syntax-ppss))
@@ -903,6 +886,10 @@ into account."
 
 
 ;;;*;;; Blocks
+
+(defvar r-prefixed-block-patterns
+  (mapcar (lambda (fun) (concat fun "[ \t\n]*("))
+          '("function" "if" "for" "while")))
 
 (defun r-block-opening-p ()
   (save-excursion
@@ -935,21 +922,6 @@ into account."
   (and (looking-at "(")
        (not (r-ahead-attached-name-p))))
 
-(defun r-climb-block (&optional ignore-ifelse)
-  (r-save-excursion-when-nil
-    (cond
-     ((and (not ignore-ifelse)
-           (r-climb-if-else 'to-start)))
-     ((and (eq (char-before) ?\})
-           (prog2
-               (forward-char -1)
-               (r-up-list -1)
-             (r-climb-block-prefix)))))))
-
-(defvar r-prefixed-block-patterns
-  (mapcar (lambda (fun) (concat fun "[ \t\n]*("))
-          '("function" "if" "for" "while")))
-
 (defun r-behind-prefixed-block-p (&optional call)
   (if call
       (looking-at (concat call "[ \t]*("))
@@ -970,6 +942,17 @@ position of the control flow function (if, for, while, etc)."
                       (not (looking-at "if\\b"))
                     t)))
          (point))))
+
+(defun r-climb-block (&optional ignore-ifelse)
+  (r-save-excursion-when-nil
+    (cond
+     ((and (not ignore-ifelse)
+           (r-climb-if-else 'to-start)))
+     ((and (eq (char-before) ?\})
+           (prog2
+               (forward-char -1)
+               (r-up-list -1)
+             (r-climb-block-prefix)))))))
 
 (defun r-climb-block-prefix (&optional call ignore-ifelse)
   "Climb the prefix of a prefixed block. Prefixed blocks refer to
@@ -1052,6 +1035,7 @@ return the prefix."
                    (prog1 t (r-climb-chained-delims)))))
       (r-ahead-attached-name-p))))
 
+;; fixme: should end with -p?
 (defun r-behind-call-opening (pattern)
   (and (looking-at pattern)
        (r-ahead-attached-name-p)))
@@ -1069,6 +1053,12 @@ before the `=' sign."
 (defun r-behind-arg-p ()
   (save-excursion
     (r-jump-arg)))
+
+(defun r-behind-call-p ()
+  (save-excursion
+    (r-jump-object)
+    (r-skip-blanks-forward)
+    (looking-at "[[(]")))
 
 (defun r-behind-parameter-p ()
   (save-excursion
@@ -1151,12 +1141,6 @@ before the `=' sign."
                     (r-forward-sexp))))
         (and (looking-at "[ \t]*(")
              (r-forward-sexp)))))
-
-(defun r-behind-call-p ()
-  (save-excursion
-    (r-jump-object)
-    (r-skip-blanks-forward)
-    (looking-at "[[(]")))
 
 (defun r-climb-chained-delims (&optional delim)
   "Should be called with point between delims, e.g. `]|['."
@@ -1506,6 +1490,9 @@ without curly braces."
 
 
 ;;;*;;; Function Declarations
+
+;; VS[04-07-2016]: fixme: I think all point predicates must be in the same
+;; place. Then readers can asses at a glance what's available.
 
 (defun r-behind-defun-p ()
   (or (looking-at "function[ \t]*(")

@@ -915,7 +915,7 @@ Returns nil if line starts inside a string, t if in a comment."
       ;; Find next non-empty line to indent from
       (while (and (= (forward-line -1) 0)
                   (looking-at "[ \t]*\\($\\|#\\)")))
-      (goto-char (r-code-end-position))
+      (goto-char (r-line-end-position))
       ;; Climb relevant structures
       (unless (r-climb-block-prefix)
         (when (eq (char-before) ?,)

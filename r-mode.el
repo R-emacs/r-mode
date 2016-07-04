@@ -1,7 +1,7 @@
 ;;; r-mode.el --- Major mode for editing R code -*- lexical-binding: t; -*-
 ;;
 ;; Copyright © 2016 Vitalie Spinu, Lionel Henry
-;; Authors: Vitalie Spinu <spinuvit@gmail.com>
+;; Author: Vitalie Spinu <spinuvit@gmail.com>
 ;; URL: http://github.com/r-emacs/r-mode
 ;; Keywords: languages R
 ;; Version: 0.1.0
@@ -33,10 +33,11 @@
 
 (require 'cl-lib)
 (require 'imenu)
+
 (require 'r-font-lock)
-(require 'r-syntax)
 (require 'r-indent)
 (require 'r-roxy)
+(require 'r-utils)
 
 (defgroup r nil
   "Tools for editing R code."

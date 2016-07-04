@@ -26,7 +26,6 @@
 ;;; Code:
 
 (require 'r-indent)
-(require 'r-syntax)
 (require 'r-roxy)
 
 (defgroup r-fill nil
