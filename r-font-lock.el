@@ -1,13 +1,8 @@
 ;;; r-font-lock.el --- Font lock support R mode -*- lexical-binding: t; -*-
 ;; 
 ;; Copyright © 2016 Vitalie Spinu, Lionel Henry
-;;
 ;; Author: Vitalie Spinu <spinuvit@gmail.com>
-;; 
-;; URL: http://github.com/r-emacs/r-mode
-;; Keywords: languages R
-;; Version: 0.1
-;; Package-Requires: ((emacs "24.3"))
+;; Created: 3 Jul 2016
 ;; 
 ;; This file is not part of GNU Emacs.
 ;; 
@@ -72,7 +67,7 @@ respective font lock keyword.")
                          collect `(const :tag ,v ,k))))
 
 (defvar-local r-font-lock-keywords nil
-  "[Internal] Currently active font lock keywords in R mode buffers.")
+  "Currently active font lock keywords in R mode buffers.")
 
 (defvar r-backquoted-face 'r-backquoted-face)
 (defface r-backquoted-face
@@ -162,7 +157,7 @@ keywords from `r-font-lock-available-features'."
            when (and (eq type :keyword) (memq name r-font-lock-features))
            collect (symbol-value sym)))
 
-(defun r--font-lock-toggle-keyword (name)
+(defun r--toggle-fl-keyword (name)
   (interactive)
   (if (memq name r-font-lock-features)
       (setq r-font-lock-features (delq name r-font-lock-features))
@@ -177,12 +172,12 @@ keywords from `r-font-lock-available-features'."
                 (font-lock-refresh-defaults))))
           (buffer-list))))
 
-(defun r--generate-font-lock-submenu (menu)
-  "Internal, used to generate ESS font-lock submenu."
+(defun r--generate-fl-submenu (menu)
+  "Generate font-lock submenu."
   (append (cl-loop for (name desc-name) in r-font-lock-available-features
                    collect `[,desc-name
                              (lambda () (interactive)
-                               (r--font-lock-toggle-keyword ',name))
+                               (r--toggle-fl-keyword ',name))
                              :style toggle
                              :enable t
                              :selected ,(not (null (memq name r-font-lock-features)))])

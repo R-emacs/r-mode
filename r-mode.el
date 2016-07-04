@@ -94,7 +94,7 @@
          ["Align on ="  r-align]
          ["Fix T and F" r-fix-T-F])
         ("Font Lock"
-         :filter r--generate-font-lock-submenu)
+         :filter r--generate-fl-submenu)
         "--"
         ["r-mode version" r-mode-display-version]))
     map)
