@@ -36,6 +36,20 @@
                     (lambda ()
                       (delete-overlay ess-current-region-overlay)))))
 
+(defun r-set-variables (alist &optional globalp)
+  "Set variables from ALIST in current buffer.
+Each element of ALIST is of the form (SYM . VAL) where SYM is the
+symbol to be assigned to, and VAL is an expression to be
+evaluated. Evaluation is done with `eval'.  If GLOBALP is
+non-nil, set the default value of the variables."
+  (dolist (kv alist)
+    (let ((k (car kv))
+          (v (cdr kv)))
+      (if globalp
+          (set-default k (eval v))
+        (make-local-variable k)
+        (set k (eval v))))))
+
 
 ;;*;; Position Info
 

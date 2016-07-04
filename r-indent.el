@@ -1,27 +1,27 @@
 ;;; r-indent.el --- Indentation engine for r-mode
-;; 
+;;
 ;; Copyright (C) 2016 Lionel Henry, Vitalie Spinu
-;; 
+;;
 ;; Author: Lionel Henry <lionel.hry@gmail.com>,
 ;; Created: 3 Jul 2016
-;; 
+;;
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation; either version 2, or (at your option)
 ;; any later version.
-;; 
+;;
 ;; This file is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-;; 
+;;
 ;; A copy of the GNU General Public License is available at
 ;; http://www.r-project.org/Licenses/
-;; 
+;;
 ;;; Commentary:
-;; 
+;;
 ;; API is not yet stable.
-;; 
+;;
 ;;; Code:
 
 (require 'r-syntax)
@@ -387,68 +387,83 @@ See the variable `r-style-alist' for how these groups map onto
 different settings for variables. DEFAULT style picks
 default (aka global) values from the indentation variables."
   :group 'r-indent
-  :type '(choice (const DEFAULT)
-                 (const RRR+)
+  :type '(choice (const DEFAULT :tag "DEFAULT: Pick from global variables.")
+                 (const ESS)
+                 (const ESS> :tag "ESS with some settings shifted to the right.")
                  (const RStudio)
-                 (const RStudio-)))
+                 (const RStudio< :tag "RStudio with some settings shifted to the left.")))
 
-(defvar r-style-alist
-  `((DEFAULT
-     (r-indent-offset                . ,(default-value 'r-indent-offset))
-     (r-offset-arguments             . ,(default-value 'r-offset-arguments))
-     (r-offset-arguments-newline     . ,(default-value 'r-offset-arguments-newline))
-     (r-offset-block                 . ,(default-value 'r-offset-block))
-     (r-offset-continued             . ,(default-value 'r-offset-continued))
-     (r-align-nested-calls           . ,(default-value 'r-align-nested-calls))
-     (r-align-arguments-in-calls     . ,(default-value 'r-align-arguments-in-calls))
-     (r-align-continuations-in-calls . ,(default-value 'r-align-continuations-in-calls))
-     (r-align-blocks                 . ,(default-value 'r-align-blocks))
-     (r-indent-from-lhs              . ,(default-value 'r-indent-from-lhs))
-     (r-indent-from-chain-start      . ,(default-value 'r-indent-from-chain-start))
-     (r-indent-with-fancy-comments   . ,(default-value 'r-indent-with-fancy-comments)))
+(defvar r-indent-style-alist
+  '((DEFAULT
+     (r-indent-offset                . (default-value 'r-indent-offset))
+     (r-offset-arguments             . (default-value 'r-offset-arguments))
+     (r-offset-arguments-newline     . (default-value 'r-offset-arguments-newline))
+     (r-offset-block                 . (default-value 'r-offset-block))
+     (r-offset-continued             . (default-value 'r-offset-continued))
+     (r-align-nested-calls           . (default-value 'r-align-nested-calls))
+     (r-align-arguments-in-calls     . (default-value 'r-align-arguments-in-calls))
+     (r-align-continuations-in-calls . (default-value 'r-align-continuations-in-calls))
+     (r-align-blocks                 . (default-value 'r-align-blocks))
+     (r-indent-from-lhs              . (default-value 'r-indent-from-lhs))
+     (r-indent-from-chain-start      . (default-value 'r-indent-from-chain-start))
+     (r-indent-with-fancy-comments   . (default-value 'r-indent-with-fancy-comments)))
 
-    (RRR+
-     (r-indent-offset                . ,(default-value 'r-indent-offset))
-     (r-offset-arguments             . ,(default-value 'r-offset-arguments))
-     (r-offset-arguments-newline     . ,(default-value 'r-offset-arguments-newline))
-     (r-offset-block                 . open-delim)
-     (r-offset-continued             . ,(default-value 'r-offset-continued))
-     (r-align-nested-calls           . ,(default-value 'r-align-nested-calls))
-     (r-align-arguments-in-calls     . ,(default-value 'r-align-arguments-in-calls))
-     (r-align-continuations-in-calls . ,(default-value 'r-align-continuations-in-calls))
-     (r-align-blocks                 . ,(default-value 'r-align-blocks))
-     (r-indent-from-lhs              . (arguments))
-     (r-indent-from-chain-start      . nil)
-     (r-indent-with-fancy-comments   . ,(default-value 'r-indent-with-fancy-comments)))
+    (ESS
+     (r-indent-offset                . (default-value 'r-indent-offset))
+     (r-offset-arguments             . 'open-delim)
+     (r-offset-arguments-newline     . 'prev-call)
+     (r-offset-block                 . 'prev-line)
+     (r-offset-continued             . 'straight)
+     (r-align-nested-calls           . '("ifelse"))
+     (r-align-arguments-in-calls     . (default-value 'r-align-arguments-in-calls))
+     (r-align-continuations-in-calls . t)
+     (r-align-blocks                 . '(control-flow))
+     (r-indent-from-lhs              . '(arguments fun-decl-opening))
+     (r-indent-from-chain-start      . t)
+     (r-indent-with-fancy-comments   . t))
+
+    (ESS>
+     (r-indent-offset                . (default-value 'r-indent-offset))
+     (r-offset-arguments             . 'open-delim)
+     (r-offset-arguments-newline     . 'prev-call)
+     (r-offset-block                 . 'open-delim) ; <- differs from ESS
+     (r-offset-continued             . 'straight)
+     (r-align-nested-calls           . '("ifelse"))
+     (r-align-arguments-in-calls     . (default-value 'r-align-arguments-in-calls))
+     (r-align-continuations-in-calls . t)
+     (r-align-blocks                 . '(control-flow))
+     (r-indent-from-lhs              . '(arguments)) ; <- differs from ESS
+     (r-indent-from-chain-start      . nil)          ; <- differs from ESS
+     (r-indent-with-fancy-comments   . t))
 
     (RStudio
-     (r-indent-offset                . ,(default-value 'r-indent-offset))
-     (r-offset-arguments             . ,(default-value 'r-offset-arguments))
-     (r-offset-arguments-newline     . prev-line)
-     (r-offset-block                 . ,(default-value 'r-offset-block))
-     (r-offset-continued             . ,(default-value 'r-offset-continued))
+     (r-indent-offset                . (default-value 'r-indent-offset))
+     (r-offset-arguments             . 'open-delim)
+     (r-offset-arguments-newline     . 'prev-line)
+     (r-offset-block                 . 'prev-line)
+     (r-offset-continued             . 'straight)
      (r-align-nested-calls           . nil)
-     (r-align-arguments-in-calls     . ,(default-value 'r-align-arguments-in-calls))
+     (r-align-arguments-in-calls     . (default-value 'r-align-arguments-in-calls))
      (r-align-continuations-in-calls . nil)
      (r-align-blocks                 . nil)
-     (r-indent-from-lhs              . (arguments))
-     (r-indent-from-chain-start      . ,(default-value 'r-indent-from-chain-start))
+     (r-indent-from-lhs              . '(arguments))
+     (r-indent-from-chain-start      . t)
      (r-indent-with-fancy-comments   . nil))
 
-    (RStudio-
-     (r-indent-offset                . ,(default-value 'r-indent-offset))
-     (r-offset-arguments             . prev-line)
-     (r-offset-arguments-newline     . prev-line)
-     (r-offset-block                 . ,(default-value 'r-offset-block))
-     (r-offset-continued             . ,(default-value 'r-offset-continued))
-     (r-align-nested-calls           . nil)
-     (r-align-arguments-in-calls     . ,(default-value 'r-align-arguments-in-calls))
+    (RStudio<
+     (r-indent-offset                . (default-value 'r-indent-offset))
+     (r-offset-arguments             . 'prev-line) ; <- differs from RStudio
+     (r-offset-arguments-newline     . 'prev-line)
+     (r-offset-block                 . 'prev-line)
+     (r-offset-continued             . 'straight)
+     (r-align-nested-calls           . nil)        ; <- differs from RStudio
+     (r-align-arguments-in-calls     . (default-value 'r-align-arguments-in-calls))
      (r-align-continuations-in-calls . nil)
      (r-align-blocks                 . nil)
-     (r-indent-from-lhs              . (arguments))
-     (r-indent-from-chain-start      . ,(default-value 'r-indent-from-chain-start))
+     (r-indent-from-lhs              . '(arguments))
+     (r-indent-from-chain-start      . t)
      (r-indent-with-fancy-comments   . nil)))
-  
+
   "Predefined formatting styles for ESS code. Use
 `r-default-style' to apply a style in all R buffers. The values
 of all styles except OWN are fixed. To change the value of
@@ -517,6 +532,23 @@ Control variables:
  - `r-indent-with-fancy-comments': whether to indent #, ## and
    ### comments distinctly.")
 
+(defvar r-set-indent-style--history nil)
+(defun r-set-indent-style (&optional style-name globalp)
+  "Set R indentation style in current buffer to STYLE.
+If GLOBALP is non-nil, set default values of the variables."
+  (interactive)
+  (let* ((styles (mapcar 'car r-indent-style-alist))
+         (style-name (or style-name
+                         (intern (completing-read "Indentation style: "
+                                                  styles nil t nil
+                                                  'r-set-indent-style--history
+                                                  (car r-set-indent-style--history)))))
+         (style (cdr (assoc style-name r-indent-style-alist))))
+    (unless style
+      (error (format "Style `%s' is not defined in `r-indent-style-alist'"
+                     style-name)))
+    (r-set-variables style globalp)
+    style-name))
 
 
 ;;; Engine

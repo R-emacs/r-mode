@@ -78,29 +78,6 @@
     table)
   "Syntax table for R code.")
 
-(defvar r-refactor-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "t") #'r-fix-T-F)
-    (define-key map (kbd "SPC") #'r-align)))
-
-(defvar r-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-r") 'r-refactor-map)
-    (define-key map (kbd "C-c SPC") 'r-align)
-
-    (easy-menu-define r-mode-menu map "R Mode Menu"
-      '("R"
-        ["Align expressions" r-align]
-        ("Refactor"
-         ["Align on ="  r-align]
-         ["Fix T and F" r-fix-T-F])
-        ("Font Lock"
-         :filter r--generate-fl-submenu)
-        "--"
-        ["r-mode version" r-mode-display-version]))
-    map)
-  "Keymap for `r-mode'.")
-
 ;; adapted from ESS (needs more polishing)
 (defvar r-imenu-generic-expression
   '(("Functions" "^\\(.+\\)[ \t\n]*<-[ \t\n]*function[ ]*(" 1)
@@ -161,19 +138,47 @@ use `push' or `add-to-list' to overwrite the variable.")
   (when (looking-at "#+")
     (length (match-string 0))))
 
-(defun r--set-local-variables (alist)
-  "Set local variables from ALIST in current buffer"
-  (mapcar (lambda (pair)
-            (make-local-variable (car pair))
-            (set (car pair) (eval (cdr pair))))
-          (reverse alist)))
+(defvar r-refactor-map
+  (let (r-refactor-map)
+    (define-prefix-command 'r-refactor-map)
+    (define-key r-refactor-map (kbd "t")   #'r-fix-T-F)
+    (define-key r-refactor-map (kbd "C-t") #'r-fix-T-F)
+    (define-key r-refactor-map (kbd "SPC") #'r-align)
+    r-refactor-map))
+
+(defvar r-extra-map
+  (let (r-extra-map)
+    (define-prefix-command 'r-extra-map)
+    (define-key r-extra-map (kbd "s")   #'r-set-indent-style)
+    (define-key r-extra-map (kbd "C-s") #'r-set-indent-style)
+    r-extra-map))
+
+(defvar r-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-r") 'r-refactor-map)
+    (define-key map (kbd "C-c C-e") 'r-extra-map)
+    (define-key map (kbd "C-c SPC") 'r-align)
+
+    (easy-menu-define r-mode-menu map "R Mode Menu"
+      '("R"
+        ["Align expressions" r-align]
+        ("Refactor"
+         ["Align on ="  r-align]
+         ["Fix T and F" r-fix-T-F])
+        ("Font Lock"
+         :filter r--generate-fl-submenu)
+        "--"
+        ["r-mode version" r-mode-display-version]))
+    map)
+  "Keymap for `r-mode'.")
 
 ;;;###autoload
 (define-derived-mode r-mode prog-mode "R"
   "Major mode for editing R code.
 \\{r-mode-map}"
   :group 'r
-  (r--set-local-variables r-mode-variables)
+  (r-set-variables (reverse r-mode-variables))
+  (r-set-indent-style r-indent-style)
   (setq r-font-lock-keywords (r--extract-fl-keywords))
   (add-to-list 'completion-at-point-functions 'r-roxy-tag-completion)
   (setq font-lock-defaults
