@@ -1,9 +1,9 @@
 ;;; r-syntax.el --- Utils to work with R code
 ;; 
-;; Copyright (C) 2015-2016 Lionel Henry, Vitalie Spinu
+;; Copyright (C) 2016 Lionel Henry, Vitalie Spinu
 ;; 
 ;; Author: Lionel Henry <lionel.hry@gmail.com>
-;; Created: 12 Oct 2015
+;; Created: 3 Jul 2016
 ;; 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

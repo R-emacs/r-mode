@@ -6,6 +6,7 @@
 ;;          Vitalie Spinu <spinuvit@gmail.com>,
 ;;          Lionel Henry <lionel.hry@gmail.com>
 ;; Keywords: convenience, R, tools
+;; Created: 3 Jul 2016
 ;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -22,29 +23,9 @@
 ;; <http://www.gnu.org/licenses/>.
 ;; 
 ;;; Commentary:
+;;
+;; This file was adapted from the Henning Redestig's ess-roxy.el.
 ;; 
-;; Lots of inspiration from doc-mode,
-;; http://nschum.de/src/emacs/doc-mode/
-;;
-;; Features::
-;;
-;; - basic highlighting
-;; - generating and updating templates from function definition and customized default template
-;;   - C-c C-o C-o :: update template
-;; - navigating and filling roxygen fields
-;;   - C-c TAB, M-q, C-a, ENTER, M-h :: advised tag completion, fill-paragraph,
-;;        move-beginning-of-line, newline-and-indent
-;;   - C-c C-o n,p :: next, previous roxygen entry
-;;   - C-c C-o C-c :: Unroxygen region. Convenient for editing examples.
-;; - folding visibility using hs-minor-mode
-;;   - TAB :: advised r-ident-command, hide entry if in roxygen doc.
-;; - preview
-;;   - C-c C-o C-r :: create a preview of the Rd file as generated
-;;     using roxygen
-;;   - C-c C-o C-t :: create a preview of the Rd HTML file as generated
-;;     using roxygen and the tools package
-;;   - C-c C-o t :: create a preview of the Rd text file
-;;
 ;;; Code:
 
 
