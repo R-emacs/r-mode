@@ -430,3 +430,7 @@ set refill styles."
     (r--fallback-fill-paragraph justify)))
   ;; need to return something to inhibit further processing from fill-paragraph
   t)
+
+(provide 'r-fill)
+;; r-fill.el ends here
+

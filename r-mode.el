@@ -35,6 +35,7 @@
 (require 'imenu)
 
 (require 'r-font-lock)
+(require 'r-fill)
 (require 'r-indent)
 (require 'r-roxy)
 (require 'r-utils)
