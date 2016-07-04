@@ -1,13 +1,13 @@
 ;;; r-font-lock.el --- Font lock support R mode -*- lexical-binding: t; -*-
-;; 
+;;
 ;; Copyright © 2016 Vitalie Spinu, Lionel Henry
 ;; Author: Vitalie Spinu <spinuvit@gmail.com>
 ;; Created: 3 Jul 2016
-;; 
+;;
 ;; This file is not part of GNU Emacs.
-;; 
+;;
 ;;; License:
-;; 
+;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
 ;; as published by the Free Software Foundation; either version 3
@@ -24,7 +24,7 @@
 ;; Boston, MA 02110-1301, USA.
 ;;
 ;;; Commentary:
-;;; 
+;;;
 ;;; Code:
 
 (defgroup r-font-lock nil
