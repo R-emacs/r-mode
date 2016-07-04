@@ -425,7 +425,7 @@ set refill styles."
               (goto-char 0)
               (while (< (point) (point-max))
                 (r-roxy-maybe-indent-line)
-                ad-do-it
+                (r--fallback-fill-paragraph)
                 (forward-paragraph))))))))
    (t
     (r--fallback-fill-paragraph justify)))

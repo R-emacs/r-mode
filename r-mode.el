@@ -1,5 +1,5 @@
 ;;; r-mode.el --- Major mode for editing R code -*- lexical-binding: t; -*-
-;; 
+;;
 ;; Copyright © 2016 Vitalie Spinu, Lionel Henry
 ;;
 ;; Authors: Vitalie Spinu <spinuvit@gmail.com>
@@ -8,11 +8,11 @@
 ;; Keywords: languages R
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "24.3"))
-;; 
+;;
 ;; This file is not part of GNU Emacs.
-;; 
+;;
 ;;; License:
-;; 
+;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
 ;; as published by the Free Software Foundation; either version 3
@@ -29,7 +29,7 @@
 ;; Boston, MA 02110-1301, USA.
 ;;
 ;;; Commentary:
-;;; 
+;;;
 ;;; Code:
 
 (require 'cl-lib)
@@ -58,7 +58,7 @@
     (modify-syntax-entry ?%  "\"" table)
     (modify-syntax-entry ?#  "<"  table) ; open comment
     (modify-syntax-entry ?\n ">"  table) ; close comment
-    (modify-syntax-entry ?$  "_"  table) ; symbol  
+    (modify-syntax-entry ?$  "_"  table) ; symbol
     (modify-syntax-entry ?.  "_"  table)
     (modify-syntax-entry ?:  "_"  table)
     (modify-syntax-entry ?@  "_"  table)
@@ -125,20 +125,20 @@
     ;; IMENU
     (imenu-generic-expression . r-imenu-generic-expression)
 
-    ;; COMMENTS 
+    ;; PARAGRAPHS
+    (paragraph-start    . (concat "\\(" comment-start-skip "\\)*" paragraph-start))
+    (paragraph-separate . (concat "\\(" comment-start-skip "\\)*" paragraph-separate))
+
+    ;; COMMENTS (must be after PARAGRAPHS)
     (comment-add        . (if r-indent-with-fancy-comments 1 0)) ; ## or # for comment-region
-    (comment-column     . 40)               
+    (comment-column     . 40)
     (comment-use-syntax . t)
     (comment-start      . "#")
     (comment-start-skip . "#+'? *")     ; support roxygen blocks
 
     ;; OUTLINE
-    (outline-regexp . "#+ .* ---+")     ; same as R-studio sections 
+    (outline-regexp . "#+ .* ---+")     ; same as R-studio sections
     (outline-level  . #'r--outline-level)
-
-    ;; PARAGRAPHS
-    (paragraph-start    . (concat "\\(" comment-start-skip "\\)*" paragraph-start))
-    (paragraph-separate . (concat "\\(" comment-start-skip "\\)*" paragraph-separate))
 
     ;; FILLING
     (fill-paragraph-function   . #'r-fill-paragraph)
@@ -196,7 +196,7 @@ in the whole buffer."
   (interactive "r")
   beg end
   (error "Not implemented yet")
-  ;; see of how to get 
+  ;; see of how to get
   ;; (save-excursion
   ;;   (goto-char from)
   ;;   (ess-rep-regexp "\\(\\([][=,()]\\|<-\\) *\\)T\\>" "\\1TRUE"
